@@ -51,5 +51,5 @@ add_subdirectory(src)
 install(DIRECTORY cfg
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
-install(FILES nodelets.xml
+install(FILES nodelet_rslidar.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
