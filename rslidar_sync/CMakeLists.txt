@@ -15,3 +15,6 @@ add_executable(rslidar_sync_3lidar_node src/timesync_3lidar.cpp)
 target_link_libraries(rslidar_sync_3lidar_node
 	${catkin_LIBRARIES}
 )
+
+install(DIRECTORY launch rviz_cfg
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

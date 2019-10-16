@@ -31,3 +31,9 @@ catkin_package(
 )
 
 add_subdirectory(src)
+
+install(DIRECTORY cfg launch rviz_cfg
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
+install(FILES nodelets.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
