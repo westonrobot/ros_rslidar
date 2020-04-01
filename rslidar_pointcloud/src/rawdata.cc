@@ -103,6 +103,7 @@ void RawData::loadConfigFile(ros::NodeHandle node, ros::NodeHandle private_nh)
     Rx_ = 0.03997;
     Ry_ = -0.01087;
     Rz_ = 0;
+    isBpearlLidar_ = false;
   }
   else if(model == "RSBPEARL")
   {
@@ -111,6 +112,16 @@ void RawData::loadConfigFile(ros::NodeHandle node, ros::NodeHandle private_nh)
     Rx_ = 0.01697;
     Ry_ = -0.0085;
     Rz_ = 0.12644;
+    isBpearlLidar_ = true;
+  }
+  else if (model == "RSBPEARL_MINI")
+  {
+    numOfLasers = 32;
+    TEMPERATURE_RANGE = 50;
+    Rx_ = 0.01473;
+    Ry_ = 0.0085;
+    Rz_ = 0.09427;
+    isBpearlLidar_ = true;
   }
   else
   {
@@ -320,6 +331,7 @@ void RawData::processDifop(const rslidar_msgs::rslidarPacket::ConstPtr& difop_ms
     return;
   }
 
+  // uint8_t save_return_mode = return_mode_;
   // return mode check
   if ((data[45] == 0x08 && data[46] == 0x02 && data[47] >= 0x09) || (data[45] > 0x08) ||
       (data[45] == 0x08 && data[46] > 0x02))
@@ -434,6 +446,7 @@ void RawData::processDifop(const rslidar_msgs::rslidarPacket::ConstPtr& difop_ms
     {
       intensity_mode_ = 3;  // mode for the top firmware higher than T6R23V9
     }
+    
   }
 
   if (!this->is_init_angle_)
@@ -497,8 +510,10 @@ void RawData::processDifop(const rslidar_msgs::rslidarPacket::ConstPtr& difop_ms
               symbolbit = -1;
             bit2 = static_cast<int>(*(data + 468 + loopn * 3 + 1));
             bit3 = static_cast<int>(*(data + 468 + loopn * 3 + 2));
-            VERT_ANGLE[loopn] = (bit2 * 256 + bit3) * symbolbit * 0.001f * 100;
-
+            if (isBpearlLidar_)
+              VERT_ANGLE[loopn] = (bit2 * 256 + bit3) * symbolbit * 0.01f * 100;
+            else
+              VERT_ANGLE[loopn] = (bit2 * 256 + bit3) * symbolbit * 0.001f * 100;
             // horizontal offset angle
             bit1 = static_cast<int>(*(data + 564 + loopn * 3));
             if (bit1 == 0)
@@ -552,6 +567,8 @@ void RawData::processDifop(const rslidar_msgs::rslidarPacket::ConstPtr& difop_ms
         ROS_INFO_STREAM("[cloud][rawdata] lidar support dual return wave, the current mode is: last");
       }
     }
+
+    ROS_INFO_STREAM("[cloud][rawdata] difop intensity mode: "<<intensity_mode_);
   }
 }
 
@@ -582,7 +599,7 @@ int RawData::correctAzimuth(float azimuth_f, int passageway)
     azimuth_f = azimuth_f + HORI_ANGLE[passageway];
   }
   azimuth = (int)azimuth_f;
-  azimuth %= 36000;
+  azimuth = ((azimuth%36000)+36000)%36000;
 
   return azimuth;
 }
@@ -851,20 +868,26 @@ void RawData::unpack(const rslidar_msgs::rslidarPacket& pkt, pcl::PointCloud<pcl
 
     azimuth = (float)(256 * raw->blocks[block].rotation_1 + raw->blocks[block].rotation_2);
 
+    int azi1, azi2;
     if (block < (BLOCKS_PER_PACKET - 1))  // 12
     {
-      int azi1, azi2;
+      // int azi1, azi2;
       azi1 = 256 * raw->blocks[block + 1].rotation_1 + raw->blocks[block + 1].rotation_2;
       azi2 = 256 * raw->blocks[block].rotation_1 + raw->blocks[block].rotation_2;
-      azimuth_diff = (float)((36000 + azi1 - azi2) % 36000);
     }
     else
     {
-      int azi1, azi2;
+      
       azi1 = 256 * raw->blocks[block].rotation_1 + raw->blocks[block].rotation_2;
       azi2 = 256 * raw->blocks[block - 1].rotation_1 + raw->blocks[block - 1].rotation_2;
-      azimuth_diff = (float)((36000 + azi1 - azi2) % 36000);
+      
     }
+    uint16_t diff = (36000 + azi1 - azi2) % 36000;
+    if (diff > 100)  //to avoid when the lidar is set to specific FOV that cause the big difference between angle
+    {
+      diff = 0;
+    }
+    azimuth_diff = (float)(diff);
 
     for (int firing = 0, k = 0; firing < RS16_FIRINGS_PER_BLOCK; firing++)  // 2
     {
@@ -994,7 +1017,12 @@ void RawData::unpack_RS32(const rslidar_msgs::rslidarPacket& pkt, pcl::PointClou
         azi2 = 256 * raw->blocks[block - 1].rotation_1 + raw->blocks[block - 1].rotation_2;
       }
     }
-    azimuth_diff = (float)((36000 + azi1 - azi2) % 36000);
+    uint16_t diff = (36000 + azi1 - azi2) % 36000;
+    if (diff > 100)  //to avoid when the lidar is set to specific FOV that cause the big difference between angle
+    {
+      diff = 0;
+    }
+    azimuth_diff = (float)(diff);
 
     if (dis_resolution_mode_ == 0)  // distance resolution is 0.5cm and delete the AB packet mechanism
     {
