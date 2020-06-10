@@ -1,8 +1,5 @@
-/* -*- mode: C++ -*- */
 /*
- *  Copyright (C) 2012 Austin Robot Technology, Jack O'Quin
- *	Copyright (C) 2017 Robosense, Tony Zhang
- *
+ *	Copyright (C) 2018-2020 Robosense Authors
  *  License: Modified BSD Software License Agreement
  *
  *  $Id$
@@ -10,7 +7,7 @@
 
 /** \file
  *
- *  ROS driver interface for the RSLIDAR 3D LIDARs
+ *  ROS driver interface for the Robosense 3D LIDARs
  */
 #ifndef _RSDRIVER_H_
 #define _RSDRIVER_H_

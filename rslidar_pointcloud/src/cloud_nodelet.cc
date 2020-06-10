@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012 Austin Robot Technology, Jack O'Quin
+ *  Copyright (C) 2018-2020 Robosense Authors
  *  License: Modified BSD Software License Agreement
  *
  *  $Id$
@@ -7,7 +7,7 @@
 
 /** @file
 
-    This ROS nodelet converts raw RSLIDAR 3D LIDAR packets to a
+    This ROS nodelet converts raw Robosense 3D LIDAR packets to a
     PointCloud2.
 
 */

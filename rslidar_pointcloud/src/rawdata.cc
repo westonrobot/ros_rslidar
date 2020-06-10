@@ -1,8 +1,5 @@
 /*
- *  Copyright (C) 2007 Austin Robot Technology, Patrick Beeson
- *  Copyright (C) 2009, 2010, 2012 Austin Robot Technology, Jack O'Quin
- *	Copyright (C) 2017 Robosense, Tony Zhang
- *
+ *	Copyright (C) 2018-2020 Robosense Authors
  *  License: Modified BSD Software License Agreement
  *
  *  $Id$
@@ -13,7 +10,7 @@
  *
  *  RSLIDAR 3D LIDAR data accessor class implementation.
  *
- *  Class for unpacking raw RSLIDAR LIDAR packets into useful
+ *  Class for unpacking raw Robosense 3D LIDAR packets into useful
  *  formats.
  *
  */
@@ -317,6 +314,7 @@ void RawData::loadConfigFile(ros::NodeHandle node, ros::NodeHandle private_nh)
   // subscribe to difop rslidar packets, if not right correct data in difop, it will not revise the correct data in the
   // VERT_ANGLE, HORI_ANGLE etc.
   difop_sub_ = node.subscribe("rslidar_packets_difop", 10, &RawData::processDifop, (RawData*)this);
+  temperature_pub_ = node.advertise<std_msgs::Float32>("temperature", 10);
 }
 
 void RawData::processDifop(const rslidar_msgs::rslidarPacket::ConstPtr& difop_msg)
@@ -522,7 +520,10 @@ void RawData::processDifop(const rslidar_msgs::rslidarPacket::ConstPtr& difop_ms
               symbolbit = -1;
             bit2 = static_cast<int>(*(data + 564 + loopn * 3 + 1));
             bit3 = static_cast<int>(*(data + 564 + loopn * 3 + 2));
-            HORI_ANGLE[loopn] = (bit2 * 256 + bit3) * symbolbit * 0.001f * 100;
+            if (isBpearlLidar_)
+              HORI_ANGLE[loopn] = (bit2 * 256 + bit3) * symbolbit * 0.01f * 100;
+            else
+              HORI_ANGLE[loopn] = (bit2 * 256 + bit3) * symbolbit * 0.001f * 100;
           }
         }
 
@@ -848,6 +849,19 @@ void RawData::unpack(const rslidar_msgs::rslidarPacket& pkt, pcl::PointCloud<pcl
 
   const raw_packet_t* raw = (const raw_packet_t*)&pkt.data[42];
 
+  if (tempPacketNum < 75 && tempPacketNum > 0)
+  {
+    tempPacketNum++;
+  }
+  else
+  {
+    temper = computeTemperature(pkt.data[38], pkt.data[39]);
+    tempPacketNum = 1;
+    std_msgs::Float32 temperature_msgs;
+    temperature_msgs.data = temper;
+    temperature_pub_.publish(temperature_msgs);
+  }
+
   for (int block = 0; block < BLOCKS_PER_PACKET; block++, this->block_num++)  // 1 packet:12 data blocks
   {
     if (UPPER_BANK != raw->blocks[block].header)
@@ -856,15 +870,6 @@ void RawData::unpack(const rslidar_msgs::rslidarPacket& pkt, pcl::PointCloud<pcl
       break;
     }
 
-    if (tempPacketNum < 20000 && tempPacketNum > 0)  // update temperature information per 20000 packets
-    {
-      tempPacketNum++;
-    }
-    else
-    {
-      temper = computeTemperature(pkt.data[38], pkt.data[39]);
-      tempPacketNum = 1;
-    }
 
     azimuth = (float)(256 * raw->blocks[block].rotation_1 + raw->blocks[block].rotation_2);
 
@@ -969,23 +974,25 @@ void RawData::unpack_RS32(const rslidar_msgs::rslidarPacket& pkt, pcl::PointClou
 
   const raw_packet_t* raw = (const raw_packet_t*)&pkt.data[42];
 
+  if (tempPacketNum < 150 && tempPacketNum > 0)
+  {
+    tempPacketNum++;
+  }
+  else
+  {
+    temper = computeTemperature(pkt.data[38], pkt.data[39]);
+    tempPacketNum = 1;
+    std_msgs::Float32 temperature_msgs;
+    temperature_msgs.data = temper;
+    temperature_pub_.publish(temperature_msgs);
+  }
+
   for (int block = 0; block < BLOCKS_PER_PACKET; block++, this->block_num++)  // 1 packet:12 data blocks
   {
     if (UPPER_BANK != raw->blocks[block].header)
     {
       ROS_INFO_STREAM_THROTTLE(180, "[cloud][rawdata] skipping RSLIDAR DIFOP packet");
       break;
-    }
-
-    if (tempPacketNum < 20000 && tempPacketNum > 0)  // update temperature information per 20000 packets
-    {
-      tempPacketNum++;
-    }
-    else
-    {
-      temper = computeTemperature(pkt.data[38], pkt.data[39]);
-      // ROS_INFO_STREAM("Temp is: " << temper);
-      tempPacketNum = 1;
     }
 
     azimuth = (float)(256 * raw->blocks[block].rotation_1 + raw->blocks[block].rotation_2);

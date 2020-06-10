@@ -1,10 +1,5 @@
 /*
- *  Copyright (C) 2007 Austin Robot Technology, Patrick Beeson
- *  Copyright (C) 2009, 2010 Austin Robot Technology, Jack O'Quin
- *  Copyright (C) 2015, Jack O'Quin
- *	Copyright (C) 2017, Robosense, Tony Zhang
- *
- *
+ *	Copyright (C) 2018-2020 Robosense Authors
  *  License: Modified BSD Software License Agreement
  *
  *  $Id$
@@ -12,7 +7,7 @@
 
 /** \file
  *
- *  Input classes for the RSLIDAR RS-16 3D LIDAR:
+ *  Input classes for the Robosense LIDAR:
  *
  *     Input -- base class used to access the data independently of
  *              its source

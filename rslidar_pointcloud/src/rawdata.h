@@ -1,9 +1,5 @@
-/* -*- mode: C++ -*-
- *
- *  Copyright (C) 2007 Austin Robot Technology, Yaxin Liu, Patrick Beeson
- *  Copyright (C) 2009, 2010, 2012 Austin Robot Technology, Jack O'Quin
- *  Copyright (C) 2017 Robosense, Tony Zhang
- *
+/*
+ *  Copyright (C) 2018-2020 Robosense Authors
  *  License: Modified BSD Software License Agreement
  *
  *  $Id$
@@ -13,10 +9,6 @@
  *
  *  @brief Interfaces for interpreting raw packets from the Robosense 3D LIDAR.
  *
- *  @author Yaxin Liu
- *  @author Patrick Beeson
- *  @author Jack O'Quin
- *  @author Tony Zhang
  */
 
 #ifndef _RAWDATA_H
@@ -27,6 +19,7 @@
 #include <rslidar_msgs/rslidarPacket.h>
 #include <rslidar_msgs/rslidarScan.h>
 #include "std_msgs/String.h"
+#include <std_msgs/Float32.h>
 #include <pcl/point_types.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl_ros/impl/transforms.hpp>
@@ -162,6 +155,7 @@ public:
 
   void processDifop(const rslidar_msgs::rslidarPacket::ConstPtr& difop_msg);
   ros::Subscriber difop_sub_;
+  ros::Publisher temperature_pub_;
   bool is_init_curve_;
   bool is_init_angle_;
   bool is_init_top_fw_;

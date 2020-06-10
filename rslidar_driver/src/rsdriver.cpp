@@ -1,8 +1,5 @@
 /*
- *  Copyright (C) 2007 Austin Robot Technology, Patrick Beeson
- *  Copyright (C) 2009-2012 Austin Robot Technology, Jack O'Quin
- *	Copyright (C) 2017 Robosense, Tony Zhang
- *
+ *	Copyright (C) 2018-2020 Robosense Authors
  *  License: Modified BSD Software License Agreement
  *
  *  $Id$
@@ -10,7 +7,7 @@
 
 /** \file
  *
- *  ROS driver implementation for the RILIDAR 3D LIDARs
+ *  ROS driver implementation for the Robosense 3D LIDARs
  */
 #include "rsdriver.h"
 #include <rslidar_msgs/rslidarScan.h>

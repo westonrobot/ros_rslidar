@@ -1,8 +1,5 @@
 /*
- *  Copyright (C) 2009, 2010 Austin Robot Technology, Jack O'Quin
- *  Copyright (C) 2011 Jesse Vera
- *  Copyright (C) 2012 Austin Robot Technology, Jack O'Quin
- *  Copyright (C) 2017 Robosense, Tony Zhang
+ *  Copyright (C) 2018-2020 Robosense Authors
  *  License: Modified BSD Software License Agreement
  *
  *  $Id$
@@ -10,7 +7,7 @@
 
 /** @file
 
-    This class converts raw RSLIDAR 3D LIDAR packets to PointCloud2.
+    This class converts raw Robosense 3D LIDAR packets to PointCloud2.
 
 */
 #include "convert.h"
